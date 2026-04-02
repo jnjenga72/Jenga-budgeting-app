@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jenga QR</title>
+    <meta name="theme-color" content="#6366f1">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/241/241528.png">
+
+    <!-- Include the HTML5 QR Code library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <!-- Include the QRCode Generation library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #10b981;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        h1 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.5px; }
+        
+        .logo-svg {
+            width: 36px;
+            height: 36px;
+            color: var(--primary-color);
+        }
+        .logo-block {
+            animation: logo-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform: translateY(5px);
+        }
+        .logo-block:nth-child(2) { animation-delay: 0.1s; }
+        .logo-block:nth-child(3) { animation-delay: 0.2s; }
+        .logo-block:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes logo-pop {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        #reader { 
+            width: 100% !important; 
+            border: none !important;
+        }
+        #scan-page, #create-page {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #create-page { padding: 20px; align-items: center; overflow-y: auto; gap: 15px; }
+        
+        /* Styling buttons and UI elements injected by the library */
+        #reader button, .clear-btn, #share-btn, .action-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            cursor: pointer;
+        }
+        #share-btn {
+            background-color: var(--accent-color);
+            margin-top: 12px;
+            width: 100%;
+            display: none;
+        }
+        #result-container {
+            padding: 16px 24px;
+            background-color: var(--card-bg);
+            border-top: 1px solid #333;
+            text-align: center;
+        }
+        #history-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .history-header h2 {
+            font-size: 0.8rem;
+            color: #888;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .history-item {
+            background-color: var(--card-bg);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            border-left: 4px solid var(--primary-color);
+        }
+        .history-time {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        #result { 
+            font-weight: 500; 
+            color: var(--accent-color); 
+            text-align: center;
+            word-break: break-all;
+        }
+        .tab-bar {
+            display: flex;
+            background-color: var(--card-bg);
+            border-top: 1px solid #333;
+            padding: 10px 0;
+        }
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .tab-btn.active { color: var(--primary-color); }
+        
+        #qr-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: var(--card-bg);
+            color: white;
+            font-family: inherit;
+            resize: none;
+            box-sizing: border-box;
+        }
+        #qrcode-output {
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+        #qrcode-output img { display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <header>
+        <svg class="logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path class="logo-block" d="M3 7C3 4.79086 4.79086 3 7 3H17C19.2091 3 21 4.79086 21 7V17C21 19.2091 19.2091 21 17 21H7C4.79086 21 3 19.2091 3 17V7Z" stroke="currentColor" stroke-width="2"/>
+            <rect class="logo-block" x="6" y="15" width="12" height="3" rx="1" fill="currentColor"/>
+            <rect class="logo-block" x="8" y="10.5" width="12" height="3" rx="1" fill="currentColor" fill-opacity="0.8"/>
+            <rect class="logo-block" x="4" y="6" width="12" height="3" rx="1" fill="currentColor" fill-opacity="0.5"/>
+        </svg>
+        <h1 id="app-title">Jenga QR</h1>
+    </header>
+    
+    <div id="scan-page">
+        <main style="flex: 0 0 auto;">
+            <div id="reader"></div>
+        </main>
+
+        <div id="result-container">
+            <div id="result">Waiting for scan...</div>
+            <button id="share-btn" onclick="shareResult()">Share Result</button>
+        </div>
+
+        <section id="history-section">
+            <div class="history-header">
+                <h2>Scan History</h2>
+                <button class="clear-btn" onclick="clearHistory()" style="background: transparent; color: #ff4444; padding: 0;">Clear</button>
+            </div>
+            <div id="history-list"></div>
+        </section>
+    </div>
+
+    <div id="create-page" style="display: none;">
+        <p style="font-size: 0.9rem; color: #888; text-align: center;">Enter text, links, or media URLs below to generate a QR code.</p>
+        <textarea id="qr-input" placeholder="Paste link or type here..."></textarea>
+        <button class="action-btn" onclick="generateQR()" style="width: 100%;">Generate QR Code</button>
+        <div id="qrcode-output"></div>
+        <button id="download-qr" class="action-btn" onclick="downloadQR()" style="width: 100%; background-color: var(--accent-color); display: none;">Download QR Code</button>
+    </div>
+
+    <nav class="tab-bar">
+        <button class="tab-btn active" id="btn-scan" onclick="showSection('scan')">Scan</button>
+        <button class="tab-btn" id="btn-create" onclick="showSection('create')">Create</button>
+    </nav>
+
+    <script>
+        // Load the success sound effect
+        const scanSound = new Audio('https://raw.githubusercontent.com/rafael-m-silva/Notification-Sounds/master/bell.mp3');
+
+        // Section management
+        function showSection(section) {
+            const isScan = section === 'scan';
+            document.getElementById('scan-page').style.display = isScan ? 'flex' : 'none';
+            document.getElementById('create-page').style.display = isScan ? 'none' : 'flex';
+            document.getElementById('app-title').innerText = isScan ? 'Jenga QR' : 'Jenga Create';
+            
+            document.getElementById('btn-scan').classList.toggle('active', isScan);
+            document.getElementById('btn-create').classList.toggle('active', !isScan);
+        }
+
+        // Generation logic
+        function generateQR() {
+            const text = document.getElementById('qr-input').value;
+            if (!text) return alert("Please enter some text or a link.");
+            
+            const container = document.getElementById('qrcode-output');
+            container.innerHTML = ""; // Clear previous QR
+            new QRCode(container, {
+                text: text,
+                width: 200,
+                height: 200,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            document.getElementById('download-qr').style.display = 'block';
+        }
+
+        function downloadQR() {
+            const img = document.querySelector('#qrcode-output img');
+            const canvas = document.querySelector('#qrcode-output canvas');
+            const link = document.createElement('a');
+            link.download = 'generated-qr.png';
+            
+            if (img && img.src) {
+                link.href = img.src;
+            } else if (canvas) {
+                link.href = canvas.toDataURL("image/png");
+            } else {
+                return;
+            }
+            link.click();
+        }
+
+        let lastScannedText = "";
+
+        // History state management
+        let scanHistory = JSON.parse(localStorage.getItem('qr_history') || '[]');
+
+        function renderHistory() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = scanHistory.map((item) => `
+                <div class="history-item">
+                    <div style="word-break: break-all;">
+                        ${item.text.startsWith('http') 
+                            ? `<a href="${item.text}" target="_blank" rel="noopener" style="color: var(--primary-color); text-decoration: none;">${item.text}</a>` 
+                            : item.text}
+                    </div>
+                    <div class="history-time">${new Date(item.timestamp).toLocaleString()}</div>
+                </div>
+            `).reverse().join('');
+        }
+
+        function addToHistory(text) {
+            // Prevent spamming the history with the same scan repeatedly
+            const lastScan = scanHistory[scanHistory.length - 1];
+            if (lastScan && lastScan.text === text && Date.now() - lastScan.timestamp < 5000) return;
+
+            scanHistory.push({ text, timestamp: Date.now() });
+            if (scanHistory.length > 50) scanHistory.shift(); // Keep last 50 entries
+            localStorage.setItem('qr_history', JSON.stringify(scanHistory));
+            renderHistory();
+        }
+
+        function clearHistory() {
+            if (confirm("Clear all scan history?")) {
+                scanHistory = [];
+                localStorage.removeItem('qr_history');
+                renderHistory();
+            }
+        }
+
+        async function shareResult() {
+            if (!lastScannedText) return;
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Scanned QR Code',
+                        text: lastScannedText,
+                        url: lastScannedText.startsWith('http') ? lastScannedText : undefined
+                    });
+                } catch (err) {
+                    if (err.name !== "AbortError") console.error('Error sharing:', err);
+                }
+            } else {
+                alert("Sharing is not supported on this browser context. Note that Web Share requires HTTPS.");
+            }
+        }
+
+        renderHistory();
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Handle the result of a successful scan
+            console.log(`Scan result: ${decodedText}`, decodedResult);
+            lastScannedText = decodedText;
+            
+            // Play the sound effect
+            scanSound.currentTime = 0; // Reset sound to beginning if already playing
+            scanSound.play().catch(err => console.warn("Audio playback delayed until user interaction."));
+
+            const resultElement = document.getElementById('result');
+            const shareBtn = document.getElementById('share-btn');
+            
+            // Check if the result is a URL and make it clickable
+            if (decodedText.startsWith("http://") || decodedText.startsWith("https://")) {
+                resultElement.innerHTML = `Scanned Result: <a href="${decodedText}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">${decodedText}</a>`;
+            } else {
+                resultElement.innerText = `Scanned Result: ${decodedText}`;
+            }
+            
+            shareBtn.style.display = 'block';
+            
+            addToHistory(decodedText);
+            
+            // Optional: Stop scanning after a success
+            // html5QrcodeScanner.clear();
+        }
+
+        function onScanFailure(error) {
+            // Scan failure usually happens when no QR code is in frame
+        }
+
+        // This function "calibrates" the scanning area automatically 
+        // based on the width and height of the camera feed.
+        let qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
+            let minEdgePercentage = 0.7; // 70% of the smallest edge
+            let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+            let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+            return {
+                width: qrboxSize,
+                height: qrboxSize
+            };
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { 
+                fps: 15, // Higher FPS for smoother "automatic" detection
+                qrbox: qrboxFunction,
+                aspectRatio: 1.0,
+                rememberLastUsedCamera: true,
+                showTorchButtonIfSupported: true,
+                videoConstraints: {
+                    facingMode: "environment"
+                }
+            },
+            /* verbose= */ false); // Setting verbose to false ensures the scanner attempts to start automatically without a "Start Scanning" button.
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        // Register Service Worker for Offline Access
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed', err));
+            });
+        }
+    </script>
+</body>
+</html>
