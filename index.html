@@ -1,3 +1,186 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Budgeting App</title>
+    <meta name="theme-color" content="#AE2012">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/192/AE2012/ffffff?text=J">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="is-loading">
+    <div id="app-loader" class="loader-overlay">
+        <div class="loader-content">
+            <div class="logo-icon pulse-animation">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="14" width="5" height="6" rx="1"/>
+                    <rect x="9.5" y="8" width="5" height="12" rx="1"/>
+                    <rect x="16" y="3" width="5" height="17" rx="1"/>
+                </svg>
+            </div>
+            <div class="loader-text">Jenga<span>Budgets</span></div>
+            <div class="loader-progress">
+                <div class="loader-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="14" width="5" height="6" rx="1"/>
+                        <rect x="9.5" y="8" width="5" height="12" rx="1"/>
+                        <rect x="16" y="3" width="5" height="17" rx="1"/>
+                    </svg>
+                </div>
+                <h1>Jenga<span>Budgets</span></h1>
+                <button id="theme-toggle" class="theme-btn" title="Toggle Dark Mode">🌙</button>
+            </div>
+            <nav class="main-nav">
+                <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+                <button class="nav-btn" data-page="transactions">Transactions</button>
+                <button class="nav-btn" data-page="budgets">Budgets</button>
+                <button class="nav-btn" data-page="tools">Tools</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div id="notification-area"></div>
+                <section class="budget-summary">
+                    <h2>Overview</h2>
+                    <div class="summary-cards">
+                        <div class="card income-card">
+                            <h3>Total Income</h3>
+                            <p>Ksh <span id="total-income">0.00</span></p>
+                        </div>
+                        <div class="card expenses-card">
+                            <h3>Total Expenses</h3>
+                            <p>Ksh <span id="total-expenses">0.00</span></p>
+                        </div>
+                        <div class="card balance-card">
+                            <h3>Remaining Balance</h3>
+                            <p>Ksh <span id="remaining-balance">0.00</span></p>
+                        </div>
+                    </div>
+                </section>
+                <section class="chart-section">
+                    <canvas id="spending-chart"></canvas>
+                </section>
+                <section class="budget-progress-section">
+                    <h2>Monthly Budget Progress</h2>
+                    <div id="budget-progress-list"></div>
+                </section>
+            </div>
+
+            <!-- Transactions Page -->
+            <div id="transactions" class="page">
+                <section class="add-transaction">
+                    <h2>Add New Transaction</h2>
+                    <form id="transaction-form">
+                        <div class="form-group">
+                            <label for="date">Date:</label>
+                            <input type="date" id="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount:</label>
+                            <input type="number" id="amount" placeholder="0.00" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="type">Type:</label>
+                            <select id="type">
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category:</label>
+                            <select id="category">
+                                <option value="Food">Food</option>
+                                <option value="Rent">Rent</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Education">Education</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Allowance">Allowance</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn add-btn">Add Transaction</button>
+                    </form>
+                </section>
+
+                <section class="transaction-history">
+                    <h2>Transaction History</h2>
+                    <div class="filter-group">
+                        <input type="text" id="search-transactions" placeholder="Search amount or date...">
+                        <label for="filter-category">Filter:</label>
+                        <select id="filter-category">
+                            <option value="all">All Categories</option>
+                            <option value="Food">Food</option><option value="Rent">Rent</option><option value="Transport">Transport</option><option value="Entertainment">Entertainment</option><option value="Education">Education</option><option value="Salary">Salary</option><option value="Allowance">Allowance</option><option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <ul id="transaction-list"></ul>
+                </section>
+            </div>
+
+            <!-- Budgets Page -->
+            <div id="budgets" class="page">
+                <section class="add-transaction">
+                    <h2>Set Category Budgets</h2>
+                    <form id="budget-form">
+                        <div class="form-group">
+                            <label for="budget-category">Category:</label>
+                            <select id="budget-category">
+                                <option value="Food">Food</option><option value="Rent">Rent</option><option value="Transport">Transport</option><option value="Entertainment">Entertainment</option><option value="Education">Education</option><option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-amount">Monthly Limit (Ksh):</label>
+                            <input type="number" id="budget-amount" placeholder="0.00" step="0.01" required>
+                        </div>
+                        <button type="submit" class="btn">Save Budget</button>
+                    </form>
+                </section>
+            </div>
+
+            <!-- Tools Page -->
+            <div id="tools" class="page">
+                <section class="sms-import">
+                    <h2>Smart SMS Import</h2>
+                    <div class="form-group">
+                        <label for="sms-text">Paste M-Pesa / Bank SMS here:</label>
+                        <textarea id="sms-text" rows="3" placeholder="Paste your message here..."></textarea>
+                    </div>
+                    <button type="button" id="import-btn" class="btn">Parse & Auto-fill</button>
+                </section>
+
+                <section class="backup-restore">
+                    <h2>Backup & Restore</h2>
+                    <p>Keep your data safe. Export your budget data to a file or restore from a previous backup.</p>
+                    <div class="action-group">
+                        <button id="export-data-btn" class="btn">Export Data (JSON)</button>
+                        <label for="restore-file-input" class="btn secondary-btn">Restore from File</label>
+                        <input type="file" id="restore-file-input" accept=".json" style="display: none;">
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Sound Effects -->
+    <audio id="cash-register-sound" src="https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3" preload="auto"></audio>
+
+    <script src="script.js"></script>
+</body>
+=======
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -398,4 +581,5 @@
         }
     </script>
 </body>
+>>>>>>> 5329093a943556ab62f0d61b6a420bfea980c215
 </html>
